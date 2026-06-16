@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CT对比剂计算器">
+    <meta name="theme-color" content="#1e3c72">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%231e3c72' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='white'%3E🏥%3C/text%3E%3C/svg%3E">
+    <title>CT对比剂用量计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: 0.85;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .content {
+            padding: 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .input-group input, .input-group select {
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 17px;
+            transition: all 0.3s;
+            background: #f9fafb;
+            width: 100%;
+            -webkit-appearance: none;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
+        }
+
+        .input-group .unit {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 6px;
+        }
+
+        .bmi-row {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bmi-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .bmi-value {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .bmi-normal { background: #d1fae5; color: #065f46; }
+        .bmi-overweight { background: #fef3c7; color: #92400e; }
+        .bmi-obese { background: #fee2e2; color: #991b1b; }
+
+        .concentration-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .conc-btn {
+            padding: 12px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f9fafb;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+            transition: all 0.3s;
+            text-align: center;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .conc-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .exam-card {
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            -webkit-touch-callout: none;
+        }
+
+        .exam-card:active {
+            transform: scale(0.97);
+        }
+
+        .exam-card.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .exam-card .exam-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .exam-card .exam-desc {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+            box-shadow: 0 4px 16px rgba(30, 60, 114, 0.3);
+        }
+
+        .calculate-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(30, 60, 114, 0.3);
+        }
+
+        .result-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .result-item .label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .result-item .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+
+        .result-item .unit {
+            font-size: 14px;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .detail-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .detail-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-content {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.8;
+        }
+
+        .detail-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .detail-content li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .detail-content li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .warning-box .warning-title {
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-box p, .warning-item {
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.7;
+            margin-bottom: 6px;
+        }
+
+        .reference {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.8;
+        }
+
+        .reference strong {
+            color: #374151;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .badge-cta { background: #dbeafe; color: #1e40af; }
+        .badge-enhance { background: #d1fae5; color: #065f46; }
+        .badge-perfusion { background: #fce7f3; color: #9d174d; }
+
+        /* 添加到主屏幕提示 */
+        .add-to-home {
+            display: none;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .add-to-home.show {
+            display: block;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .add-to-home .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .add-to-home .close-btn:active {
+            opacity: 1;
+        }
+
+        .add-to-home strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .add-to-home .steps {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* iOS底部安全区域 */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .content {
+                padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 CT对比剂用量计算器</h1>
+            <p>基于国家卫健委《CT检查操作规程》及临床专家共识</p>
+        </div>
+
+        <div class="content">
+            <!-- 添加到主屏幕提示 -->
+            <div id="addToHome" class="add-to-home">
+                <span class="close-btn" onclick="dismissAddToHome()">×</span>
+                <strong>💡 添加到主屏幕更方便</strong>
+                <div class="steps" id="addToHomeSteps"></div>
+            </div>
+
+            <!-- 患者信息输入 -->
+            <div class="card">
+                <div class="section-title">👤 患者信息</div>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>身高</label>
+                        <input type="number" id="height" placeholder="170" min="50" max="250" oninput="calculateBMI()">
+                        <span class="unit">cm</span>
+                    </div>
+                    <div class="input-group">
+                        <label>体重</label>
+                        <input type="number" id="weight" placeholder="70" min="10" max="300" oninput="calculateBMI()">
+                        <span class="unit">kg</span>
+                    </div>
+                    <div class="input-group">
+                        <label>年龄</label>
+                        <input type="number" id="age" placeholder="50" min="0" max="120">
+                        <span class="unit">岁</span>
+                    </div>
+                    <div class="input-group">
+                        <label>性别</label>
+                        <select id="gender">
+                            <option value="male">男</option>
+                            <option value="female">女</option>
+                        </select>
+                    </div>
+                    <div class="input-group full-width">
+                        <div class="bmi-row">
+                            <span class="bmi-label">BMI</span>
+                            <span id="bmiValue" class="bmi-value bmi-normal">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 对比剂浓度选择 -->
+            <div class="card">
+                <div class="section-title">🧪 对比剂碘浓度</div>
+                <div class="concentration-btns">
+                    <button class="conc-btn active" onclick="selectConcentration(300, this)">300</button>
+                    <button class="conc-btn" onclick="selectConcentration(320, this)">320</button>
+                    <button class="conc-btn" onclick="selectConcentration(350, this)">350</button>
+                    <button class="conc-btn" onclick="selectConcentration(370, this)">370</button>
+                    <button class="conc-btn" onclick="selectConcentration(400, this)">400</button>
+                </div>
+            </div>
+
+            <!-- 头颈部检查 -->
+            <div class="card">
+                <div class="section-title">🧠 头颈部检查</div>
+                <div class="exam-grid">
+                    <div class="exam-card" onclick="selectExam('brain_enhance')">
+                        <div class="exam-name">头颅CT增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">脑实质、脑膜、垂体等病变</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('head_neck_cta')">
+                        <div class="exam-name">头颈部CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">颈动脉、椎动脉、颅内动脉成像</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('head_neck_ctv')">
+                        <div class="exam-name">头颈部CTV <span class="badge badge-cta">CTV</span></div>
+                        <div class="exam-desc">颈静脉、颅内静脉窦成像</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('brain_ctp')">
+                        <div class="exam-name">脑灌注CTP <span class="badge badge-perfusion">灌注</span></div>
+                        <div class="exam-desc">脑血流灌注评估（卒中/肿瘤）</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 胸部检查 -->
+            <div class="card">
+                <div class="section-title">🫁 胸部检查</div>
+                <div class="exam-grid">
+                    <div class="exam-card" onclick="selectExam('chest_enhance')">
+                        <div class="exam-name">胸部CT增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">纵隔、肺门、胸壁病变</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('ctpa')">
+                        <div class="exam-name">肺动脉CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">肺动脉栓塞筛查</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('coronary_cta')">
+                        <div class="exam-name">冠状动脉CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">冠脉狭窄/斑块评估</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('thoracic_aorta_cta')">
+                        <div class="exam-name">主动脉CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">主动脉夹层/动脉瘤</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('tro_cta')">
+                        <div class="exam-name">胸痛三联CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">冠脉+主动脉+肺动脉一次性</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 腹部与盆腔检查 -->
+            <div class="card">
+                <div class="section-title">🫘 腹部与盆腔检查</div>
+                <div class="exam-grid">
+                    <div class="exam-card" onclick="selectExam('abdomen_enhance')">
+                        <div class="exam-name">腹部CT增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">肝胆胰脾肾常规增强</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('liver_multiphase')">
+                        <div class="exam-name">肝脏多期增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">动脉期+门脉期+延迟期</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('pelvis_enhance')">
+                        <div class="exam-name">盆腔CT增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">盆腔脏器/淋巴结/肿瘤</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('abdominal_aorta_cta')">
+                        <div class="exam-name">腹主动脉CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">腹主动脉及分支血管</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('renal_artery_cta')">
+                        <div class="exam-name">肾动脉CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">肾动脉狭窄/变异</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('portal_ctv')">
+                        <div class="exam-name">门静脉CTV <span class="badge badge-cta">CTV</span></div>
+                        <div class="exam-desc">门静脉系统成像</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 脊柱与四肢检查 -->
+            <div class="card">
+                <div class="section-title">🦴 脊柱与四肢检查</div>
+                <div class="exam-grid">
+                    <div class="exam-card" onclick="selectExam('spine_enhance')">
+                        <div class="exam-name">脊柱CT增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">颈椎/胸椎/腰椎增强</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('limb_artery_cta')">
+                        <div class="exam-name">四肢动脉CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">上肢或下肢动脉成像</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('lower_limb_ctv')">
+                        <div class="exam-name">下肢静脉CTV <span class="badge badge-cta">CTV</span></div>
+                        <div class="exam-desc">下肢深静脉血栓筛查</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('whole_body_cta')">
+                        <div class="exam-name">全身动脉CTA <span class="badge badge-cta">CTA</span></div>
+                        <div class="exam-desc">一站式全身血管评估</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 其他补充项目 -->
+            <div class="card">
+                <div class="section-title">🔬 其他常用项目</div>
+                <div class="exam-grid">
+                    <div class="exam-card" onclick="selectExam('adrenal_enhance')">
+                        <div class="exam-name">肾上腺CT增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">肾上腺肿瘤/增生</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('pancreas_enhance')">
+                        <div class="exam-name">胰腺CT增强 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">胰腺肿瘤/炎症</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('ctu')">
+                        <div class="exam-name">CT尿路造影 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">泌尿系统三维成像</div>
+                    </div>
+                    <div class="exam-card" onclick="selectExam('enterography')">
+                        <div class="exam-name">CT小肠造影 <span class="badge badge-enhance">增强</span></div>
+                        <div class="exam-desc">小肠病变评估</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="calculate-btn" onclick="calculate()">
+                🚀 计算对比剂方案
+            </button>
+
+            <!-- 结果展示 -->
+            <div id="resultSection" class="result-section">
+                <div class="result-card">
+                    <div class="result-title" id="resultTitle">📋 检查方案</div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">对比剂总量</div>
+                            <div class="value" id="contrastVolume">--</div>
+                            <div class="unit">mL</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">注射流率</div>
+                            <div class="value" id="flowRate">--</div>
+                            <div class="unit">mL/s</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">注射时间</div>
+                            <div class="value" id="injectionTime">--</div>
+                            <div class="unit">秒</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">碘总量</div>
+                            <div class="value" id="iodineDose">--</div>
+                            <div class="unit">mg I/kg</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">📍 扫描范围</div>
+                    <div class="detail-content" id="scanRange"></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">⏱️ 扫描时相与延迟时间</div>
+                    <div class="detail-content" id="scanTiming"></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">💉 注射方案详情</div>
+                    <div class="detail-content" id="injectionProtocol"></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-title">⚙️ 扫描参数建议</div>
+                    <div class="detail-content" id="scanParams"></div>
+                </div>
+
+                <div class="warning-box">
+                    <div class="warning-title">⚠️ 重要提醒</div>
+                    <div id="warningList"></div>
+                </div>
+            </div>
+
+            <div class="reference">
+                <strong>📚 参考依据：</strong><br>
+                1. 国家卫生健康委员会《CT检查操作规程》（2024版）<br>
+                2. 中华医学会放射学分会《头颈部CT血管成像扫描方案与注射方案专家共识》<br>
+                3. 中华医学会放射学分会《急性胸痛三联征多层螺旋CT检查技术专家共识》<br>
+                4. 中华医学会放射学分会《下肢动脉CT血管成像扫描技术专家共识》<br>
+                5. 中华医学会放射学分会《碘对比剂使用指南（第二版）》<br>
+                6. Radiopaedia CT Protocols & AAPM CT Protocols<br><br>
+                <strong>💡 说明：</strong>所有计算基于体重标准化给药原则（300-450 mg I/kg），对比剂总量上限150 mL。血管类检查采用较高碘流率（IDR），实质脏器增强采用标准流率。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedExam = null;
+        let selectedConcentration = 300;
+        let selectedExamName = '';
+
+        // 检查项目数据库
+        const examDatabase = {
+            brain_enhance: {
+                name: '头颅CT增强',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '从颅底（枕骨大孔）至颅顶',
+                timing: [
+                    '动脉期：注射开始后 25-30s（64层以上CT：30-35s）',
+                    '静脉期/实质期：注射开始后 50-60s',
+                    '延迟期：必要时 3-5min'
+                ],
+                protocol: '单期或双期扫描，常规采用静脉期（50-60s）为主',
+                params: '管电压 120kV，自动管电流，层厚 ≤5mm，标准算法重建',
+                notes: '用于脑肿瘤、脑膜炎、垂体病变等'
+            },
+            head_neck_cta: {
+                name: '头颈部CTA',
+                type: 'cta',
+                iodineDose: { min: 150, max: 300, typical: 250 },
+                flowRate: { min: 4.0, max: 5.5, typical: 5.0 },
+                scanRange: '从主动脉弓向上至颅顶部',
+                timing: [
+                    '触发扫描：监测主动脉弓，阈值 100-120 HU',
+                    '或固定延迟：注射开始后 18-22s',
+                    '小剂量团注测试：颈内动脉峰值时间'
+                ],
+                protocol: '双筒高压注射器：对比剂 + 生理盐水 20-50mL 冲洗',
+                params: '管电压 100-120kV，自动管电流 150-800mA，层厚 0.5-1.25mm',
+                notes: '体重≥50kg者流率应达 4-5mL/s，建议使用右上肢静脉'
+            },
+            head_neck_ctv: {
+                name: '头颈部CTV',
+                type: 'ctv',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 3.0, max: 4.0, typical: 3.5 },
+                scanRange: '从颅底至颈根部（包括颈静脉全程）',
+                timing: [
+                    '静脉期扫描：注射开始后 60-80s',
+                    '或采用双期扫描：动脉期 + 静脉期'
+                ],
+                protocol: '注射总量适当增加，延长注射时间以保证静脉充盈',
+                params: '管电压 120kV，层厚 1-2mm，软组织算法',
+                notes: '用于静脉窦血栓、颈静脉病变评估'
+            },
+            brain_ctp: {
+                name: '脑灌注CTP',
+                type: 'perfusion',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 4.0, max: 6.0, typical: 5.0 },
+                scanRange: '以基底节为中心，覆盖约 10cm（包括基底节及大脑中动脉供血区）',
+                timing: [
+                    '连续扫描 40-60s（对比剂完全通过）',
+                    '最小延迟开始扫描',
+                    '扫描周期：根据设备不同 1-3s/周'
+                ],
+                protocol: '高浓度对比剂 35-50mL，高速注射 5-6mL/s，追加生理盐水 30-40mL',
+                params: '管电压 80kV，高mAs，层厚 5-10mm，覆盖范围 ≥8cm',
+                notes: '需18G以上留置针，用于急性脑卒中缺血半暗带评估'
+            },
+            chest_enhance: {
+                name: '胸部CT增强',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 3.0, max: 4.0, typical: 3.5 },
+                scanRange: '从胸廓入口至后肋膈角（肺尖至肺底）',
+                timing: [
+                    '动脉期：注射开始后 25-30s',
+                    '静脉期：注射开始后 55-60s（64层以上CT：65-70s）'
+                ],
+                protocol: '双期扫描，纵隔病变以静脉期为主，肺门病变需动脉期',
+                params: '管电压 120kV，自动mA，重建层厚 <10mm，纵隔窗+肺窗',
+                notes: '检查前禁食4h，训练深吸气后屏气'
+            },
+            ctpa: {
+                name: '肺动脉CTA (CTPA)',
+                type: 'cta',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 4.0, max: 5.0, typical: 4.5 },
+                scanRange: '从肺尖至肺底（包括肺动脉全程）',
+                timing: [
+                    '触发扫描：监测肺动脉干，阈值 80-100 HU',
+                    '或固定延迟：注射开始后 15-20s',
+                    '扫描方向：从头侧向足侧'
+                ],
+                protocol: '流率 4.5-5.0mL/s，对比剂 50mL + 生理盐水 20mL',
+                params: '管电压 100-120kV，薄层重建 ≤1.25mm，平静呼吸下屏气',
+                notes: '用于肺动脉栓塞筛查，需保证肺动脉CT值 >200 HU'
+            },
+            coronary_cta: {
+                name: '冠状动脉CTA',
+                type: 'cta',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 4.5, max: 5.5, typical: 5.0 },
+                scanRange: '从气管隆突下至心脏膈面（冠脉全程）',
+                timing: [
+                    '触发扫描：监测升主动脉，阈值 120 HU',
+                    '或采用小剂量团注测试确定峰值时间',
+                    '扫描时机：冠脉强化峰值 10-12s 后'
+                ],
+                protocol: '流率 5.0mL/s，对比剂 60mL + 生理盐水 30mL',
+                params: '管电压 100-120kV（BMI<30用100kV），前瞻性心电门控，层厚 0.6-0.75mm',
+                notes: '需控制心率 ≤70bpm（β受体阻滞剂），舌下含服硝酸甘油'
+            },
+            thoracic_aorta_cta: {
+                name: '主动脉CTA（胸主动脉）',
+                type: 'cta',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 3.5, max: 5.0, typical: 4.0 },
+                scanRange: '从主动脉弓上 1cm 至膈肌（胸主动脉全程）',
+                timing: [
+                    '触发扫描：监测降主动脉（气管分叉下1cm），阈值 120 HU',
+                    '扫描方向：从头向足位'
+                ],
+                protocol: '流率 4.0mL/s，对比剂 80-100mL + 生理盐水 20mL',
+                params: '管电压 120kV，自动管电流，层厚 ≤1mm，螺距 0.5-1.0',
+                notes: '用于主动脉夹层/动脉瘤，需观察破口位置及累及范围'
+            },
+            tro_cta: {
+                name: '胸痛三联CTA',
+                type: 'cta',
+                iodineDose: { min: 350, max: 450, typical: 400 },
+                flowRate: { min: 4.0, max: 5.0, typical: 4.5 },
+                scanRange: '从主动脉弓上 1cm 至心脏膈面（包括冠脉+主动脉+肺动脉）',
+                timing: [
+                    '触发扫描：监测主动脉弓降部，阈值 100 HU，达阈值后延迟 5s',
+                    '扫描时间：14-20s（覆盖全胸）'
+                ],
+                protocol: '三相注射：I期 4.5mL/s 对比剂（10-14s）；II期 3mL/s 对比剂 30mL；III期 3mL/s 盐水 30mL',
+                params: '管电压 120kV，管电流 350mA，准直器 64×0.625mm，螺距 0.25-0.297',
+                notes: '用于急性胸痛病因筛查（ACS+PE+AD），对比剂用量较大，辐射剂量较高'
+            },
+            abdomen_enhance: {
+                name: '腹部CT增强',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '从右膈面至肝脏下缘（脾大者至脾下缘）',
+                timing: [
+                    '动脉期：25-30s（64层以上CT：30-35s）',
+                    '门脉期：55-60s（64层以上CT：65-70s）',
+                    '平衡期/延迟期：120s（必要时）'
+                ],
+                protocol: '双筒注射器：对比剂 + 生理盐水 15-20mL',
+                params: '管电压 120kV，自动mA，重建层厚 ≤5mm，腹窗+软组织窗',
+                notes: '检查前禁食4h，口服清水充盈胃肠道，训练深吸气后屏气'
+            },
+            liver_multiphase: {
+                name: '肝脏多期增强',
+                type: 'enhance',
+                iodineDose: { min: 350, max: 450, typical: 400 },
+                flowRate: { min: 3.0, max: 4.0, typical: 3.5 },
+                scanRange: '从右膈面至肝脏下缘',
+                timing: [
+                    '动脉早期（肝动脉期）：20-25s',
+                    '动脉晚期（门脉流入期）：35-45s',
+                    '门静脉期：60-70s',
+                    '延迟期/平衡期：3-5min（观察血管瘤/肝癌）'
+                ],
+                protocol: '多期扫描，高流率保证肝动脉良好显示',
+                params: '管电压 120kV，自动mA，层厚 1-3mm，多平面重组',
+                notes: '用于肝癌、血管瘤、局灶性结节增生等鉴别诊断'
+            },
+            pelvis_enhance: {
+                name: '盆腔CT增强',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '从耻骨联合下缘至髂嵴水平',
+                timing: [
+                    '动脉期：35-40s',
+                    '静脉期：75-80s',
+                    '必要时延迟扫描'
+                ],
+                protocol: '检查前憋尿，膀胱充盈后扫描',
+                params: '管电压 120kV，自动mA，层厚 ≤5mm，软组织窗',
+                notes: '膀胱镜检当天不行此检查，需膀胱完全充盈'
+            },
+            abdominal_aorta_cta: {
+                name: '腹主动脉CTA',
+                type: 'cta',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 4.0, max: 5.0, typical: 4.5 },
+                scanRange: '从膈肌上缘至髂总动脉分叉',
+                timing: [
+                    '触发扫描：监测腹主动脉（肾动脉水平），阈值 100-150 HU',
+                    '或固定延迟：注射开始后 20-25s'
+                ],
+                protocol: '流率 4.5mL/s，对比剂 80-100mL + 生理盐水 40-50mL',
+                params: '管电压 100-120kV，自动管电压，层厚 ≤1mm，重叠重建',
+                notes: '用于腹主动脉瘤、狭窄、斑块评估'
+            },
+            renal_artery_cta: {
+                name: '肾动脉CTA',
+                type: 'cta',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 4.0, max: 5.0, typical: 4.5 },
+                scanRange: '从肝门至肾下极（包括双肾动脉全程）',
+                timing: [
+                    '触发扫描：监测腹主动脉（肾动脉开口上方），阈值 100 HU',
+                    '皮质期（动脉期）：25-30s',
+                    '髓质期：80-90s'
+                ],
+                protocol: '流率 4.5mL/s，对比剂 80mL + 生理盐水 30mL',
+                params: '管电压 100-120kV，层厚 ≤1mm，MPR+CPR重组',
+                notes: '用于肾动脉狭窄（RAS）、变异、移植肾评估'
+            },
+            portal_ctv: {
+                name: '门静脉CTV/CTP',
+                type: 'ctv',
+                iodineDose: { min: 350, max: 450, typical: 400 },
+                flowRate: { min: 3.0, max: 4.0, typical: 3.5 },
+                scanRange: '从膈顶至脐水平（门静脉系统全程）',
+                timing: [
+                    '门静脉期：注射开始后 60-70s',
+                    '或采用双期：动脉期 + 门静脉期'
+                ],
+                protocol: '延长注射时间或增加总量，保证门静脉充分显影',
+                params: '管电压 120kV，层厚 1-3mm，MPR+MIP重组',
+                notes: '用于门静脉血栓、癌栓、高压评估'
+            },
+            spine_enhance: {
+                name: '脊柱CT增强',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '以病变椎体为中心，包括上下各1-2个椎体',
+                timing: [
+                    '动脉期：25-30s',
+                    '延迟期：60-90s（观察肿瘤强化）'
+                ],
+                protocol: '根据病变性质选择单期或双期',
+                params: '管电压 120kV，层厚 2-3mm，软组织+骨算法',
+                notes: '用于脊柱肿瘤、感染、血管畸形'
+            },
+            limb_artery_cta: {
+                name: '四肢动脉CTA',
+                type: 'cta',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 3.5, max: 5.0, typical: 4.0 },
+                scanRange: '上肢：从主动脉弓至指尖；下肢：从T12至足尖',
+                timing: [
+                    '触发扫描：监测腹主动脉下端/髂外动脉，阈值 100-120 HU',
+                    '固定延迟：注射开始后 25-30s（下肢）'
+                ],
+                protocol: '体重60-90kg：100mL；<60kg：80mL；>90kg：120mL；盐水 30mL',
+                params: '管电压 100-120kV，层厚 ≤1mm，螺距 0.7-1.375',
+                notes: '上肢CTA需从主动脉弓开始，避免左头臂静脉伪影'
+            },
+            lower_limb_ctv: {
+                name: '下肢静脉CTV',
+                type: 'ctv',
+                iodineDose: { min: 300, max: 400, typical: 350 },
+                flowRate: { min: 3.0, max: 4.0, typical: 3.5 },
+                scanRange: '从髂嵴至足底（双下肢静脉全程）',
+                timing: [
+                    '间接法：注射开始后 150-180s（足侧向头侧扫描）',
+                    '直接法：足背静脉注射，延迟 3-5min'
+                ],
+                protocol: '间接法：80mL对比剂 + 30mL盐水，延迟150s；直接法：稀释对比剂足背静脉注射',
+                params: '管电压 120kV，层厚 2-3mm，软组织算法',
+                notes: '用于下肢深静脉血栓（DVT）筛查，直接法需双侧足背静脉穿刺'
+            },
+            whole_body_cta: {
+                name: '全身动脉CTA',
+                type: 'cta',
+                iodineDose: { min: 400, max: 500, typical: 450 },
+                flowRate: { min: 4.0, max: 5.0, typical: 4.5 },
+                scanRange: '从颅底至足尖（一站式全身血管评估）',
+                timing: [
+                    '分两段扫描：胸腹段 + 头颈段',
+                    '或采用宽体探测器一次扫描'
+                ],
+                protocol: '大剂量对比剂，分段注射或高流率长时注射',
+                params: '管电压 120kV，自动管电流，层厚 ≤1mm',
+                notes: '用于全身血管炎、多发血管病变、术前评估'
+            },
+            adrenal_enhance: {
+                name: '肾上腺CT增强',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '从T11椎体上缘至肾门水平',
+                timing: [
+                    '动脉期：25-30s',
+                    '实质期：55-60s',
+                    '延迟期：15min（观察腺瘤洗脱）'
+                ],
+                protocol: '薄层扫描，延迟期对腺瘤鉴别至关重要',
+                params: '管电压 120kV，小FOV 20-30cm，层厚 2-3mm',
+                notes: '用于肾上腺腺瘤、嗜铬细胞瘤、转移瘤鉴别'
+            },
+            pancreas_enhance: {
+                name: '胰腺CT增强',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '从胰腺尾部上缘至十二指肠水平段',
+                timing: [
+                    '动脉期：25-30s（胰腺实质强化峰值）',
+                    '实质期：55-60s',
+                    '必要时延迟 120s'
+                ],
+                protocol: '口服清水充盈胃十二指肠，双期扫描',
+                params: '管电压 120kV，层厚 3-5mm，软组织窗',
+                notes: '用于胰腺癌、胰腺炎、IPMN等'
+            },
+            ctu: {
+                name: 'CT尿路造影(CTU)',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '从肾上极至耻骨联合上缘',
+                timing: [
+                    '皮质期（动脉期）：25-30s',
+                    '髓质期：55-65s',
+                    '排泌期：8-15min（或更长，根据梗阻程度）'
+                ],
+                protocol: '多期扫描，排泌期观察肾盂输尿管充盈',
+                params: '管电压 120kV，层厚 1-3mm，MPR+曲面重组',
+                notes: '检查前憋尿，膀胱充盈后扫描，72h内不得做肾盂造影'
+            },
+            enterography: {
+                name: 'CT小肠造影',
+                type: 'enhance',
+                iodineDose: { min: 300, max: 450, typical: 350 },
+                flowRate: { min: 2.5, max: 3.5, typical: 3.0 },
+                scanRange: '从十二指肠水平段至耻骨联合上缘',
+                timing: [
+                    '动脉期：25-30s',
+                    '静脉期：55-60s'
+                ],
+                protocol: '检查前1天无渣半流食，口服大量清水/甘露醇充盈小肠',
+                params: '管电压 120kV，层厚 3-5mm，软组织窗',
+                notes: '用于克罗恩病、小肠肿瘤、出血等'
+            }
+        };
+
+        // 检测是否已添加到主屏幕
+        function checkAddToHome() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                window.navigator.standalone === true;
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+
+            if (!isStandalone) {
+                const addToHome = document.getElementById('addToHome');
+                const steps = document.getElementById('addToHomeSteps');
+
+                if (isIOS) {
+                    steps.innerHTML = '1. 点击底部 <b>分享按钮 ↑</b><br>2. 下滑选择 <b>"添加到主屏幕"</b><br>3. 点击 <b>"添加"</b>';
+                } else if (isAndroid) {
+                    steps.innerHTML = '1. 点击右上角 <b>⋮ 菜单</b><br>2. 选择 <b>"添加到主屏幕"</b> 或 <b>"安装应用"</b><br>3. 点击 <b>"添加"</b>';
+                } else {
+                    steps.innerHTML = '按 Ctrl+D 收藏本页，或按浏览器提示添加到主屏幕';
+                }
+
+                addToHome.classList.add('show');
+            }
+        }
+
+        function dismissAddToHome() {
+            document.getElementById('addToHome').classList.remove('show');
+            localStorage.setItem('dismissedAddToHome', 'true');
+        }
+
+        // 页面加载时检查
+        window.onload = function() {
+            if (!localStorage.getItem('dismissedAddToHome')) {
+                checkAddToHome();
+            }
+        };
+
+        function calculateBMI() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const bmiDisplay = document.getElementById('bmiValue');
+
+            if (height > 0 && weight > 0) {
+                const bmi = weight / ((height / 100) ** 2);
+                const bmiValue = bmi.toFixed(1);
+
+                bmiDisplay.textContent = bmiValue;
+                bmiDisplay.className = 'bmi-value';
+
+                if (bmi < 18.5) {
+                    bmiDisplay.classList.add('bmi-normal');
+                    bmiDisplay.textContent += ' (偏瘦)';
+                } else if (bmi < 24) {
+                    bmiDisplay.classList.add('bmi-normal');
+                    bmiDisplay.textContent += ' (正常)';
+                } else if (bmi < 28) {
+                    bmiDisplay.classList.add('bmi-overweight');
+                    bmiDisplay.textContent += ' (超重)';
+                } else {
+                    bmiDisplay.classList.add('bmi-obese');
+                    bmiDisplay.textContent += ' (肥胖)';
+                }
+            } else {
+                bmiDisplay.textContent = '--';
+                bmiDisplay.className = 'bmi-value bmi-normal';
+            }
+        }
+
+        function selectConcentration(conc, btn) {
+            selectedConcentration = conc;
+            document.querySelectorAll('.conc-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function selectExam(examId) {
+            document.querySelectorAll('.exam-card').forEach(card => card.classList.remove('selected'));
+
+            const cards = document.querySelectorAll('.exam-card');
+            for (let card of cards) {
+                if (card.getAttribute('onclick') && card.getAttribute('onclick').includes(examId)) {
+                    card.classList.add('selected');
+                    break;
+                }
+            }
+
+            selectedExam = examId;
+            selectedExamName = examDatabase[examId].name;
+        }
+
+        function calculate() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const age = parseFloat(document.getElementById('age').value);
+            const gender = document.getElementById('gender').value;
+
+            if (!height || !weight || !age) {
+                alert('请填写完整的患者信息（身高、体重、年龄）');
+                return;
+            }
+
+            if (!selectedExam) {
+                alert('请选择检查项目');
+                return;
+            }
+
+            const exam = examDatabase[selectedExam];
+            const bmi = weight / ((height / 100) ** 2);
+
+            let iodineDose = exam.iodineDose.typical;
+            if (bmi < 18.5) iodineDose = exam.iodineDose.min;
+            else if (bmi > 28) iodineDose = exam.iodineDose.max;
+
+            if (age > 75) iodineDose = Math.min(iodineDose, 350);
+            else if (age < 18) iodineDose = Math.min(iodineDose, 300);
+
+            let contrastVolume = (iodineDose * weight) / selectedConcentration;
+            if (contrastVolume > 150) contrastVolume = 150;
+
+            let flowRate = exam.flowRate.typical;
+            if (weight < 50) flowRate = exam.flowRate.min;
+            else if (weight > 90) flowRate = Math.min(exam.flowRate.max, exam.flowRate.typical + 0.5);
+
+            if (age > 75) flowRate = Math.min(flowRate, 3.5);
+
+            const injectionTime = Math.round(contrastVolume / flowRate);
+            const actualIodineDose = ((contrastVolume * selectedConcentration) / weight).toFixed(0);
+
+            document.getElementById('resultTitle').textContent = `📋 ${exam.name} 检查方案`;
+            document.getElementById('contrastVolume').textContent = Math.round(contrastVolume);
+            document.getElementById('flowRate').textContent = flowRate.toFixed(1);
+            document.getElementById('injectionTime').textContent = injectionTime;
+            document.getElementById('iodineDose').textContent = actualIodineDose;
+
+            document.getElementById('scanRange').innerHTML = `<ul><li>${exam.scanRange}</li></ul>`;
+            document.getElementById('scanTiming').innerHTML = `<ul>${exam.timing.map(t => `<li>${t}</li>`).join('')}</ul>`;
+
+            document.getElementById('injectionProtocol').innerHTML = `
+                <ul>
+                    <li><strong>注射方式：</strong>静脉团注法（高压注射器）</li>
+                    <li><strong>对比剂：</strong>${Math.round(contrastVolume)} mL（${selectedConcentration} mgI/mL）</li>
+                    <li><strong>注射流率：</strong>${flowRate.toFixed(1)} mL/s</li>
+                    <li><strong>注射时间：</strong>${injectionTime} 秒</li>
+                    <li><strong>生理盐水冲洗：</strong>20-50 mL（与对比剂相同流率）</li>
+                    <li><strong>特殊说明：</strong>${exam.protocol}</li>
+                </ul>
+            `;
+
+            document.getElementById('scanParams').innerHTML = `
+                <ul>
+                    <li>${exam.params}</li>
+                    <li><strong>临床用途：</strong>${exam.notes}</li>
+                </ul>
+            `;
+
+            // 警告列表
+            let warnings = [
+                '1. 肾功能不全患者（eGFR < 30）需慎用或禁用碘对比剂',
+                '2. 对比剂过敏史患者需术前预处理（激素+抗组胺药）',
+                '3. 甲状腺功能亢进未控制者禁用',
+                '4. 孕妇及哺乳期妇女慎用',
+                '5. 建议注射前将对比剂预热至37℃',
+                '6. 注射后追加生理盐水冲洗可减少静脉对比剂残留',
+                '7. 本计算器结果仅供参考，具体方案需结合临床实际情况调整'
+            ];
+
+            if (age > 75) warnings.push('8. 高龄患者：建议降低流率，密切监测肾功能');
+            if (bmi > 30) warnings.push('9. 肥胖患者：图像质量可能受影响，可考虑提高管电压');
+
+            document.getElementById('warningList').innerHTML = warnings.map(w => `<div class="warning-item">${w}</div>`).join('');
+
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
